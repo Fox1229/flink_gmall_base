@@ -10,7 +10,7 @@ import java.util.Properties;
 /**
  * kafka工具类
  */
-public class MyKafkaUtil {
+public class MyKafkaUtils {
 
     // kafka集群地址
     private static final String BOOTSTRAP_SERVER = "hadoop102:9092,hadoop103:9092,hadoop104:9092";

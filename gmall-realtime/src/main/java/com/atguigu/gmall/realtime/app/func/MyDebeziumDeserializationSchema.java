@@ -18,6 +18,9 @@ public class MyDebeziumDeserializationSchema implements DebeziumDeserializationS
 
     private static final long serialVersionUID = -31165416854840603L;
 
+    /**
+     * 重写此方法，将打印结果转换为json格式
+     */
     @Override
     public void deserialize(SourceRecord sourceRecord, Collector<String> collector) throws Exception {
 

@@ -4,14 +4,12 @@ package com.atguigu.gmall.realtime.app.dwd;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.realtime.utils.MyKafkaUtil;
+import com.atguigu.gmall.realtime.utils.MyKafkaUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
@@ -23,10 +21,9 @@ import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
-
+import static com.atguigu.gmall.realtime.utils.MyConfigUtils.*;
 import java.text.SimpleDateFormat;
 
 /**
@@ -39,7 +36,7 @@ public class BaseLogApp {
         // TODO 1.环境准备
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         // 设置并行度，与kafka分区数保持一致
-        env.setParallelism(4);
+        env.setParallelism(PARALLELISM_NUM);
 
         // TODO 2.检查点相关设置
         // 开启检查点：精准一次消费
@@ -52,21 +49,20 @@ public class BaseLogApp {
         // 设置两个检查点最小时间间隔
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(2 * 1000L);
         // 设置状态后端
-        env.setStateBackend(new FsStateBackend("hdfs://hadoop102:8020/gmall/ck"));
+        env.setStateBackend(new FsStateBackend(HDFS_CHECKPOINT_PATH));
         // 设置操作hdfs的用户
-        System.setProperty("HADOOP_USER_NAME", "atguigu");
+        System.setProperty(HADOOP_USER_KEY, HADOOP_USER_NAME);
         // 设置重启策略
         // env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 3000L));
         // 30天一个周期，允许失败次数
         env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.days(30), Time.seconds(3)));*/
 
         // TODO 3.从kafka主题消费数据
-        String topic = "f_ods_base_log";
-        String groupId = "f_ods_base_log_gid";
-        FlinkKafkaConsumer<String> kafkaSource = MyKafkaUtil.getKafkaSource(topic, groupId);
+        FlinkKafkaConsumer<String> kafkaSource = MyKafkaUtils.getKafkaSource(ODS_BASE_LOG, ODS_BASE_LOG_GROUP_ID);
         DataStreamSource<String> kafkaDStream = env.addSource(kafkaSource);
 
-        // TODO 4.将数据进行类型转换
+        // TODO 4.将数据转化为json对象
+        // 补充：可以考虑使用process将解析失败的数据写入侧输出流
         SingleOutputStreamOperator<JSONObject> jsonObjDStream = kafkaDStream.map(
                 new MapFunction<String, JSONObject>() {
                     @Override
@@ -77,16 +73,18 @@ public class BaseLogApp {
         );
 
         // TODO 5.对新老访客进行修复：状态编程
+        // 卸载重装后is_new字段可能会出问题
         SingleOutputStreamOperator<JSONObject> jsonObjIsNewDStream = jsonObjDStream
                 // 按照数据mid将数据进行分组
                 .keyBy(r -> r.getJSONObject("common").get("mid"))
-                // 判断用户是否首次登录，对is_new字段进行更新
+                // 判断设备是否首次登录，对is_new字段进行更新
                 // 0：非首次登录，不做处理
                 // 1：检查状态中是否有当前mid的登录信息，如果有则不是首次登录，将状态置为0；否则为首次登录，记录mid的登录时间
                 .map(
                         new RichMapFunction<JSONObject, JSONObject>() {
 
                             // 维护用户登录状态
+                            // 不能在声明的时候直接对状态进行初始化，因为生命周期还没有开始，获取不到RuntimeContext
                             private ValueState<String> lastVisitDateState;
                             // 格式化日期
                             private SimpleDateFormat sdf;
@@ -128,9 +126,7 @@ public class BaseLogApp {
                         }
                 );
 
-
         // TODO 6.对日志数据进行分流：测输出流
-
         // 定义测输出流标签
         OutputTag<String> startJsonOutput = new OutputTag<String>("startJsonObj") {};
         OutputTag<String> displayJsonOutput = new OutputTag<String>("displayJsonObj") {};
@@ -178,9 +174,9 @@ public class BaseLogApp {
         // displayStream.print("display###");
 
         // TODO 7.将分流后的数据写入kafka的不同主题
-        splitDStream.addSink(MyKafkaUtil.getKafkaSink("f_dwd_page_log"));
-        startStream.addSink(MyKafkaUtil.getKafkaSink("f_dwd_start_log"));
-        displayStream.addSink(MyKafkaUtil.getKafkaSink("f_dwd_display_log"));
+        splitDStream.addSink(MyKafkaUtils.getKafkaSink(DWD_PAGE_LOG));
+        startStream.addSink(MyKafkaUtils.getKafkaSink(DWD_START_LOG));
+        displayStream.addSink(MyKafkaUtils.getKafkaSink(DWD_DISPLAY_LOG));
 
         env.execute();
     }
