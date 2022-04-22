@@ -4,16 +4,20 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.ververica.cdc.connectors.mysql.MySQLSource;
 import com.alibaba.ververica.cdc.connectors.mysql.table.StartupOptions;
+import com.atguigu.gmall.realtime.app.func.TableProcessFunction;
 import com.atguigu.gmall.realtime.app.func.MyDebeziumDeserializationSchema;
+import com.atguigu.gmall.realtime.beans.TableProcess;
 import com.atguigu.gmall.realtime.utils.MyKafkaUtils;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.streaming.api.datastream.*;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
+import org.apache.flink.util.OutputTag;
 
-import static com.atguigu.gmall.realtime.utils.MyConfigUtils.*;
+import static com.atguigu.gmall.realtime.common.GamllConfig.*;
 
 /**
  * 业务数据分流
@@ -91,12 +95,24 @@ public class BaseDBApp {
         // mysqlDStream.print();
 
         // TODO 7.将配置流数据进行广播：广播流
+        MapStateDescriptor<String, TableProcess> mapStateDescriptor
+                = new MapStateDescriptor<String, TableProcess>("mapStateDescriptor", Types.STRING, Types.POJO(TableProcess.class));
+        BroadcastStream<String> broadcastStream = mysqlDStream.broadcast(mapStateDescriptor);
 
         // TODO 8.将业务流数据与广播流进行关联：connect
+        BroadcastConnectedStream<JSONObject, String> connectedStream = filterDStream.connect(broadcastStream);
 
-        // TODO 9.将关联后的数据进行分流
-        // 实时数据：主流
-        // 纬度数据：测输出流
+        // TODO 9.将关联后的数据进行分流。实时数据：主流；纬度数据：测输出流
+        // 定义侧输出流
+        OutputTag<JSONObject> hbaseTag = new OutputTag<JSONObject>("hbaseTag"){};
+        SingleOutputStreamOperator<JSONObject> kafka
+                = connectedStream.process(new TableProcessFunction(hbaseTag, mapStateDescriptor));
+        // 获取测输出流
+        DataStream<JSONObject> hbase = kafka.getSideOutput(hbaseTag);
+
+        // 打印
+        kafka.print("kafka>>>");
+        hbase.print("hbase>>>");
 
         // TODO 10.将主流中的数据写入kafka不同的topic
 
