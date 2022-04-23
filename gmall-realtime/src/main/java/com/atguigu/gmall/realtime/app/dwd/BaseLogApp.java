@@ -19,7 +19,7 @@ import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
-import static com.atguigu.gmall.realtime.common.GamllConfig.*;
+import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 import java.text.SimpleDateFormat;
 
 /**
@@ -165,14 +165,15 @@ public class BaseLogApp {
         DataStream<String> startStream = splitDStream.getSideOutput(startJsonOutput);
         DataStream<String> displayStream = splitDStream.getSideOutput(displayJsonOutput);
 
+        // 打印
         // splitDStream.print("page>>>");
         // startStream.print("start$$$");
         // displayStream.print("display###");
 
         // TODO 7.将分流后的数据写入kafka的不同主题
-        splitDStream.addSink(MyKafkaUtils.getKafkaSink(DWD_PAGE_LOG));
-        startStream.addSink(MyKafkaUtils.getKafkaSink(DWD_START_LOG));
-        displayStream.addSink(MyKafkaUtils.getKafkaSink(DWD_DISPLAY_LOG));
+        splitDStream.addSink(MyKafkaUtils.getKafkaProducer(DWD_PAGE_LOG));
+        startStream.addSink(MyKafkaUtils.getKafkaProducer(DWD_START_LOG));
+        displayStream.addSink(MyKafkaUtils.getKafkaProducer(DWD_DISPLAY_LOG));
 
         env.execute();
     }

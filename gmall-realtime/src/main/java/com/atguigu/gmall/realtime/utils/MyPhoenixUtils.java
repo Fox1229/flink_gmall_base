@@ -5,8 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import static com.atguigu.gmall.realtime.common.GamllConfig.PHOENIX_DRIVER;
-import static com.atguigu.gmall.realtime.common.GamllConfig.PHOENIX_SERVER;
+import static com.atguigu.gmall.realtime.common.GmallConfig.PHOENIX_DRIVER;
+import static com.atguigu.gmall.realtime.common.GmallConfig.PHOENIX_SERVER;
 
 public class MyPhoenixUtils {
 

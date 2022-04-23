@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.ververica.cdc.connectors.mysql.MySQLSource;
 import com.alibaba.ververica.cdc.connectors.mysql.table.StartupOptions;
+import com.atguigu.gmall.realtime.app.func.DimSinkFunction;
 import com.atguigu.gmall.realtime.app.func.TableProcessFunction;
 import com.atguigu.gmall.realtime.app.func.MyDebeziumDeserializationSchema;
 import com.atguigu.gmall.realtime.beans.TableProcess;
@@ -15,9 +16,13 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.api.datastream.*;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
+import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.flink.util.OutputTag;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
-import static com.atguigu.gmall.realtime.common.GamllConfig.*;
+import javax.annotation.Nullable;
+
+import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**
  * 业务数据分流
@@ -102,7 +107,7 @@ public class BaseDBApp {
         // TODO 8.将业务流数据与广播流进行关联：connect
         BroadcastConnectedStream<JSONObject, String> connectedStream = filterDStream.connect(broadcastStream);
 
-        // TODO 9.将关联后的数据进行分流。实时数据：主流；纬度数据：测输出流
+        // TODO 9.将关联后的数据进行分流。事实数据：主流；纬度数据：测输出流
         // 定义侧输出流
         OutputTag<JSONObject> hbaseTag = new OutputTag<JSONObject>("hbaseTag"){};
         SingleOutputStreamOperator<JSONObject> kafka
@@ -114,9 +119,23 @@ public class BaseDBApp {
         kafka.print("kafka>>>");
         hbase.print("hbase>>>");
 
-        // TODO 10.将主流中的数据写入kafka不同的topic
+        // TODO 10.将测输出流的数据写入hbase
+        hbase.addSink(new DimSinkFunction());
 
-        // TODO 11.将测输出流的数据写入hbase
+        // TODO 11.将主流中的数据写入kafka不同的topic
+        kafka.addSink(
+                MyKafkaUtils.getKafkaProducer(
+                        new KafkaSerializationSchema<JSONObject>() {
+                            @Override
+                            public ProducerRecord<byte[], byte[]> serialize(JSONObject element, @Nullable Long timestamp) {
+                                return new ProducerRecord<byte[], byte[]>(
+                                        element.getString(SINK_TABLE_KEY),
+                                        element.getJSONObject("data").toJSONString().getBytes()
+                                );
+                            }
+                        }
+                )
+        );
 
         env.execute();
     }

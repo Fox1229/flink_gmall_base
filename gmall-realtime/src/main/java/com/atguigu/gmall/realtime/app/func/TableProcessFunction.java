@@ -11,14 +11,12 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.atguigu.gmall.realtime.common.GamllConfig.*;
+import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**
  * dwd层分流
@@ -46,17 +44,17 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
     /**
      * 处理广播流数据
      *
-     * @param in FlinkCDC读取配置表json格式的字符串数据
+     * @param in FlinkCDC读取配置表json格式（自定义反序列化器）的字符串数据
      *           {
-     *           "data": {
-     *           "operate_type": "update",
-     *           "sink_type": "hbase",
-     *           "sink_table": "dim_base_trademark",
-     *           "source_table": "base_trademark",
-     *           "sink_extend": "",
-     *           "sink_pk": "id,name",
-     *           "sink_columns": "id,tm_name,age"
-     *           }
+     *              "data": {
+     *              "operate_type": "update",
+     *              "sink_type": "hbase",
+     *              "sink_table": "dim_base_trademark",
+     *              "source_table": "base_trademark",
+     *              "sink_extend": "",
+     *              "sink_pk": "id,name",
+     *              "sink_columns": "id,tm_name,age"
+     *              }
      *           }
      */
     @Override
@@ -77,7 +75,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
         String sinkPk = tableProcess.getSinkPk();
         String sinkExtend = tableProcess.getSinkExtend();
 
-        // 创建纬度表: 对于写入hbase的数据，并且是insert操作
+        // 创建纬度表: 写入hbase的数据，并且是insert操作
         if (SINK_TYPE_HBASE.equals(sinkType) && PHOENIX_OP_INSERT.equals(operateType)) {
             createTable(sinkTable, sinkColumns, sinkPk, sinkExtend);
         }
@@ -92,12 +90,12 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
     /**
      * 处理业务流数据
      *
-     * @param in 业务流输入数据
+     * @param in 业务流输入数据（maxwell采集数据）
      */
     @Override
     public void processElement(JSONObject in, ReadOnlyContext context, Collector<JSONObject> out) throws Exception {
 
-        // 读取状态
+        // 读取广播状态
         ReadOnlyBroadcastState<String, TableProcess> broadcastState = context.getBroadcastState(mapStateDescriptor);
         String table = in.getString("table");
         String type = in.getString("type");
@@ -107,19 +105,21 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
             type = "insert";
         }
 
+        // 拼接读取配置信息的key，根据key读取配置信息
         String key = table + "-" + type;
-        // 根据key读取配置信息
         TableProcess tableProcess = broadcastState.get(key);
 
         if (tableProcess != null) {
 
             // 根据配置表中的sinkColumns字段过滤主流数据
+            // 主流数据
             JSONObject data = in.getJSONObject("data");
+            // 配置表sinkColumns
             String columns = tableProcess.getSinkColumns();
             filterColumns(data, columns);
 
             // 将写出路径添加到tableProcess
-            in.put("sink_table", tableProcess.getSinkTable());
+            in.put(SINK_TABLE_KEY, tableProcess.getSinkTable());
 
             // key对应的配置信息存在，进行分流操作
             // 获取写出路径类型: kafka/hbase
@@ -162,6 +162,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
             sinkExtend = "";
         }
 
+        // 创建表的sql
         StringBuilder createSql = new StringBuilder();
         createSql
                 .append("create table if not exists ")
@@ -199,7 +200,6 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
             ps.execute();
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("");
         } finally {
             MyPhoenixUtils.close(ps);
         }
