@@ -55,7 +55,7 @@ public class BaseDBApp {
         env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.days(30), Time.seconds(3)));*/
 
         // TODO 3.从kafka读取数据
-        DataStreamSource<String> kafkaDStream = env.addSource(MyKafkaUtils.getKafkaSource(ODS_BASE_DB, ODS_BASE_DB_GROUP_ID));
+        DataStreamSource<String> kafkaDStream = env.addSource(MyKafkaUtils.getKafkaConsumer(ODS_BASE_DB, ODS_BASE_DB_GROUP_ID));
 
         // TODO 4.转换数据结构
         SingleOutputStreamOperator<JSONObject> jsonObjDStream = kafkaDStream.map(
@@ -82,7 +82,7 @@ public class BaseDBApp {
 
         // filterDStream.print();
 
-        // TODO 6.读取MySQL配置表信息并处理为广播流
+        // TODO 6.读取MySQL配置表信息
         SourceFunction<String> sourceFunction = MySQLSource
                 .<String>builder()
                 .hostname(MYSQL_HOST_NAME)
