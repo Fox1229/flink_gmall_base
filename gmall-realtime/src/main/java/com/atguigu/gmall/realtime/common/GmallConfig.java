@@ -37,10 +37,18 @@ public class GmallConfig {
     public static final String DWD_START_LOG_GROUP_ID = "f_dwd_start_log_group_id";
     public static final String DWD_DISPLAY_LOG = "f_dwd_display_log";
     public static final String DWD_DISPLAY_LOG_GROUP_ID = "f_dwd_display_log_group_id";
+    public static final String DWD_ORDER_INFO = "f_dwd_order_info";
+    public static final String DWD_ORDER_INFO_GROUP_ID = "f_dwd_order_info_group_id";
+    public static final String DWD_ORDER_DETAIL = "f_dwd_order_detail";
+    public static final String DWD_ORDER_DETAIL_GROUP_ID = "f_dwd_order_detail_group_id";
     public static final String KAFKA_DEFAULT_TOPIC = "gmall_default_topic";
     // dwm层
     public static final String DWM_UNIQUE_VISITOR = "f_dwm_unique_visitor";
     public static final String DWM_UNIQUE_VISITOR_GROUP_ID = "f_dwm_unique_visitor_group_id";
+    public static final String DWM_USER_JUMP_DETAIL = "f_dwm_user_jump_detail";
+    public static final String DWM_USER_JUMP_DETAIL_GROUP_ID = "f_dwm_user_jump_detail_group_id";
+    public static final String DWM_ORDER_WIDE = "f_dwm_user_jump_detail";
+    public static final String DWM_ORDER_WIDE_GROUP_ID = "f_dwm_user_jump_detail_group_id";
 
     // TODO MySQL
     public static final String MYSQL_HOST_NAME = "hadoop102";

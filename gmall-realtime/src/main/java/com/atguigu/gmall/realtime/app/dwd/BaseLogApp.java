@@ -54,7 +54,7 @@ public class BaseLogApp {
         env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.days(30), Time.seconds(3)));*/
 
         // TODO 3.从kafka主题消费数据
-        FlinkKafkaConsumer<String> kafkaSource = MyKafkaUtils.getKafkaSource(ODS_BASE_LOG, ODS_BASE_LOG_GROUP_ID);
+        FlinkKafkaConsumer<String> kafkaSource = MyKafkaUtils.getKafkaConsumer(ODS_BASE_LOG, ODS_BASE_LOG_GROUP_ID);
         DataStreamSource<String> kafkaDStream = env.addSource(kafkaSource);
 
         // TODO 4.将数据转化为json对象

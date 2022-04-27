@@ -21,7 +21,7 @@ public class MyKafkaUtils {
     /**
      * 获取kafka消费者对象
      */
-    public static FlinkKafkaConsumer<String> getKafkaSource(String topic, String groupId) {
+    public static FlinkKafkaConsumer<String> getKafkaConsumer(String topic, String groupId) {
 
         Properties prop = new Properties();
         prop.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVERS);
