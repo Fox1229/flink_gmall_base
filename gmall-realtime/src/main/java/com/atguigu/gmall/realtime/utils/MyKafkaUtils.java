@@ -36,7 +36,7 @@ public class MyKafkaUtils {
 
         Properties prop = new Properties();
         prop.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVERS);
-        // 事务的第二阶段提交需要在检查点提交之后进行，即 15min(默认事务最大提交时间) > TransactionTimeout > CheckPointTimeout
+        // 事务的第二阶段提交需要在检查点提交之后进行，即15min(默认事务最大提交时间) > TransactionTimeout > CheckPointTimeout
         prop.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, PRODUCER_TRANSACTION_TIMEOUT);
         return new FlinkKafkaProducer<String>(
                 KAFKA_DEFAULT_TOPIC,
@@ -62,7 +62,7 @@ public class MyKafkaUtils {
         Properties prop = new Properties();
         prop.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVERS);
         // 事务的第二阶段提交需要在检查点提交之后进行，即 15min(默认事务最大提交时间) > TransactionTimeout > CheckPointTimeout
-        //prop.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, PRODUCER_TRANSACTION_TIMEOUT);
+        prop.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, PRODUCER_TRANSACTION_TIMEOUT);
         return new FlinkKafkaProducer<T>(
                 KAFKA_DEFAULT_TOPIC,
                 kafkaSerializationSchema,

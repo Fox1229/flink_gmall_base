@@ -18,10 +18,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
-
 import java.util.List;
 import java.util.Map;
-
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**

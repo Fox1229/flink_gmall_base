@@ -6,11 +6,10 @@ import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.realtime.beans.OrderWide;
 import com.atguigu.gmall.realtime.beans.PaymentInfo;
 import com.atguigu.gmall.realtime.beans.PaymentWide;
-import com.atguigu.gmall.realtime.utils.DateTimeUtils;
+import com.atguigu.gmall.realtime.utils.MyDateTimeUtils;
 import com.atguigu.gmall.realtime.utils.MyKafkaUtils;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -41,14 +40,7 @@ public class PaymentWideApp {
         // 支付
         KeyedStream<PaymentInfo, Long> paymentInfoKeyedDStream = env
                 .addSource(MyKafkaUtils.getKafkaConsumer(DWD_PAYMENT_INFO, DWM_PAYMENT_WIDE_GROUP_ID))
-                .map(
-                        new MapFunction<String, PaymentInfo>() {
-                            @Override
-                            public PaymentInfo map(String jsonStr) throws Exception {
-                                return JSON.parseObject(jsonStr, PaymentInfo.class);
-                            }
-                        }
-                )
+                .map(jsonStr -> JSON.parseObject(jsonStr, PaymentInfo.class))
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy
                                 .<PaymentInfo>forBoundedOutOfOrderness(Duration.ofSeconds(3))
@@ -56,7 +48,7 @@ public class PaymentWideApp {
                                         new SerializableTimestampAssigner<PaymentInfo>() {
                                             @Override
                                             public long extractTimestamp(PaymentInfo element, long recordTimestamp) {
-                                                return DateTimeUtils.toTs(element.getCallback_time());
+                                                return MyDateTimeUtils.toTs(element.getCallback_time());
                                             }
                                         }
                                 )
@@ -66,14 +58,7 @@ public class PaymentWideApp {
         // 订单宽表
         KeyedStream<OrderWide, Long> orderWideKeyedDStream = env
                 .addSource(MyKafkaUtils.getKafkaConsumer(DWM_ORDER_WIDE, DWM_PAYMENT_WIDE_GROUP_ID))
-                .map(
-                        new MapFunction<String, OrderWide>() {
-                            @Override
-                            public OrderWide map(String jsonStr) throws Exception {
-                                return JSON.parseObject(jsonStr, OrderWide.class);
-                            }
-                        }
-                )
+                .map(jsonStr -> JSON.parseObject(jsonStr, OrderWide.class))
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy
                                 .<OrderWide>forBoundedOutOfOrderness(Duration.ofSeconds(3))
@@ -81,7 +66,7 @@ public class PaymentWideApp {
                                         new SerializableTimestampAssigner<OrderWide>() {
                                             @Override
                                             public long extractTimestamp(OrderWide element, long recordTimestamp) {
-                                                return DateTimeUtils.toTs(element.getCreate_time());
+                                                return MyDateTimeUtils.toTs(element.getCreate_time());
                                             }
                                         }
                                 )

@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 线程池工具类
  */
-public class ThreadPoolUtils {
+public class MyThreadPoolUtils {
 
     private static volatile ThreadPoolExecutor threadPoolExecutor;
 
@@ -17,9 +17,9 @@ public class ThreadPoolUtils {
     public static ThreadPoolExecutor getInstance() {
 
         if (threadPoolExecutor == null) {
-            synchronized (ThreadPoolUtils.class) {
+            synchronized (MyThreadPoolUtils.class) {
                 if (threadPoolExecutor == null) {
-                    System.out.println("创建线程池！");
+                    System.out.println("-------------- 创建线程池 --------------");
                     threadPoolExecutor = new ThreadPoolExecutor(
                             5,
                             20,

@@ -1,8 +1,8 @@
 package com.atguigu.gmall.realtime.app.func;
 
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.realtime.utils.DimUtils;
-import com.atguigu.gmall.realtime.utils.ThreadPoolUtils;
+import com.atguigu.gmall.realtime.utils.MyDimUtils;
+import com.atguigu.gmall.realtime.utils.MyThreadPoolUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
@@ -24,7 +24,7 @@ public abstract class DimAsyncFunction<T> extends RichAsyncFunction<T, T> implem
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        threadPoolExecutor = ThreadPoolUtils.getInstance();
+        threadPoolExecutor = MyThreadPoolUtils.getInstance();
     }
 
     @Override
@@ -41,7 +41,7 @@ public abstract class DimAsyncFunction<T> extends RichAsyncFunction<T, T> implem
                         String pk = getPrimaryKey(obj);
 
                         // 查询纬度信息
-                        JSONObject dimInfo = DimUtils.getDimInfo(tableName, pk);
+                        JSONObject dimInfo = MyDimUtils.getDimInfo(tableName, pk);
 
                         // 将纬度信息应用到主流
                         if (dimInfo != null) {

@@ -6,7 +6,7 @@ import com.atguigu.gmall.realtime.app.func.DimAsyncFunction;
 import com.atguigu.gmall.realtime.beans.OrderDetail;
 import com.atguigu.gmall.realtime.beans.OrderInfo;
 import com.atguigu.gmall.realtime.beans.OrderWide;
-import com.atguigu.gmall.realtime.utils.DateTimeUtils;
+import com.atguigu.gmall.realtime.utils.MyDateTimeUtils;
 import com.atguigu.gmall.realtime.utils.MyKafkaUtils;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -210,7 +210,7 @@ public class OrderWideApp {
                         String birthday = jsonObject.getString("BIRTHDAY");
 
                         orderWide.setUser_gender(gender);
-                        orderWide.setUser_age(DateTimeUtils.getAge(birthday));
+                        orderWide.setUser_age(MyDateTimeUtils.getAge(birthday));
                     }
                 },
                 ASYNC_REQUEST_TIMEOUT,

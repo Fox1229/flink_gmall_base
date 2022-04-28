@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * 日期转换工具类
  */
-public class DateTimeUtils {
+public class MyDateTimeUtils {
 
     private static final DateTimeFormatter sdf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 

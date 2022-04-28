@@ -12,7 +12,7 @@ import static com.atguigu.gmall.realtime.common.GmallConfig.REDIS_KEY_EXPIRE;
 /**
  * 查询纬度数据
  */
-public class DimUtils {
+public class MyDimUtils {
 
     /**
      * 根据id查询维度表数据
