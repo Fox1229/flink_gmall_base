@@ -65,8 +65,10 @@ public class OrderWide {
         if (orderInfo != null) {
             this.order_id = orderInfo.id;
             this.order_status = orderInfo.order_status;
+            this.operate_time = orderInfo.operate_time;
             this.create_time = orderInfo.create_time;
             this.create_date = orderInfo.create_date;
+            this.create_hour = orderInfo.create_hour;
             this.activity_reduce_amount = orderInfo.activity_reduce_amount;
             this.coupon_reduce_amount = orderInfo.coupon_reduce_amount;
             this.original_total_amount = orderInfo.original_total_amount;

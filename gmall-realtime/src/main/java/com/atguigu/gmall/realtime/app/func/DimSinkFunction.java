@@ -1,6 +1,7 @@
 package com.atguigu.gmall.realtime.app.func;
 
 import com.alibaba.fastjson.JSONObject;
+import com.atguigu.gmall.realtime.utils.DimUtils;
 import com.atguigu.gmall.realtime.utils.MyPhoenixUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.configuration.Configuration;
@@ -60,6 +61,11 @@ public class DimSinkFunction extends RichSinkFunction<JSONObject> {
             e.printStackTrace();
         } finally {
             MyPhoenixUtils.close(ps);
+        }
+
+        // 如果是对维度表的更新操作，需要删除Redis缓存数据
+        if (PHOENIX_OP_UPDATE.equals(in.getString("type"))) {
+            DimUtils.deleteRedisCache(sinkTable, data.getString("id"));
         }
     }
 

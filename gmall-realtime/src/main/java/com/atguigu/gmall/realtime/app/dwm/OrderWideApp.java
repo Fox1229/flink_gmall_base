@@ -1,14 +1,18 @@
 package com.atguigu.gmall.realtime.app.dwm;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.atguigu.gmall.realtime.app.func.DimAsyncFunction;
 import com.atguigu.gmall.realtime.beans.OrderDetail;
 import com.atguigu.gmall.realtime.beans.OrderInfo;
 import com.atguigu.gmall.realtime.beans.OrderWide;
+import com.atguigu.gmall.realtime.utils.DateTimeUtils;
 import com.atguigu.gmall.realtime.utils.MyKafkaUtils;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -16,16 +20,24 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
-
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-
+import java.util.concurrent.TimeUnit;
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**
  * 订单宽表
  * 启动应用：
  * zk kf mxw hdfs hbase(Phoenix) BaseDBApp OrderWideApp
+ * 维度关联
+ *      基本维度关联实现
+ *          PhoenixUtil
+ *              List<T> queryList(String sql,Class<T> clz)
+ *          DimUtil
+ *              JSONObject getDimInfoNoCache(String tableName,Tuple2<String,String> ... params);
+ *      优化1：旁路缓存
+ *          JSONObject getDimInfo(String tableName,Tuple2<String,String> ... params);
+ *      优化2：异步IO
  */
 public class OrderWideApp {
 
@@ -149,17 +161,170 @@ public class OrderWideApp {
                         }
                 );
 
-        // orderWideDStream.print("orderWide>>>");
+        // orderWideDStream.print(">>>");
 
-        // TODO 8.和用户维度进行关联
-        // TODO 9.和地区维度进行关联
-        // TODO 10.和商品维度进行关联
-        // TODO 11.和SPU维度进行关联
-        // TODO 12.和类别维度进行关联
-        // TODO 13.和品牌维度进行关联
+        // TODO 8.纬度关联
+        /*orderWideDStream.map(
+                new MapFunction<OrderWide, OrderWide>() {
+                    @Override
+                    public OrderWide map(OrderWide orderWide) throws Exception {
 
-        //TODO 14.将关联后的宽表写到kafka的dwm_order_wide主题中
+                        // 获取要关联的用户维度的id
+                        String userId = orderWide.getOrder_id().toString();
 
+                        // 获取纬度信息
+                        JSONObject jsonObject = DimUtil.getDimInfo(PHOENIX_DIM_USER_INFO, userId);
+                        if (jsonObject != null) {
+                            // 注意：字段名大写
+                            String gender = jsonObject.getString("GENDER");
+                            String birthday = jsonObject.getString("BIRTHDAY");
+                            LocalDate birthdayLd = LocalDate.parse(birthday);
+                            LocalDate nowLd = LocalDate.now();
+                            int age = Period.between(birthdayLd, nowLd).getYears();
+
+                            System.out.println("age: " + birthdayLd + " " + nowLd + " " + age);
+
+                            orderWide.setUser_gender(gender);
+                            orderWide.setUser_age(age);
+                        }
+
+                        return orderWide;
+                    }
+                }
+        );*/
+
+        // 用户纬度关联
+        SingleOutputStreamOperator<OrderWide> orderWideWithUserInfoDStream = AsyncDataStream.unorderedWait(
+                orderWideDStream,
+                new DimAsyncFunction<OrderWide>(PHOENIX_DIM_USER_INFO) {
+
+                    @Override
+                    public String getPrimaryKey(OrderWide obj) {
+                        return obj.getUser_id().toString();
+                    }
+
+                    @Override
+                    public void join(OrderWide orderWide, JSONObject jsonObject) {
+                        // 注意：字段名大写
+                        String gender = jsonObject.getString("GENDER");
+                        String birthday = jsonObject.getString("BIRTHDAY");
+
+                        orderWide.setUser_gender(gender);
+                        orderWide.setUser_age(DateTimeUtils.getAge(birthday));
+                    }
+                },
+                ASYNC_REQUEST_TIMEOUT,
+                TimeUnit.SECONDS
+        );
+
+        // 地区维度进行关联
+        SingleOutputStreamOperator<OrderWide> orderWideWithBaseProvinceDStream = AsyncDataStream.unorderedWait(
+                orderWideWithUserInfoDStream,
+                new DimAsyncFunction<OrderWide>(PHOENIX_DIM_BASE_PROVINCE) {
+
+                    @Override
+                    public String getPrimaryKey(OrderWide orderWide) {
+                        return orderWide.getProvince_id().toString();
+                    }
+
+                    @Override
+                    public void join(OrderWide orderWide, JSONObject dimInfo) {
+
+                        orderWide.setProvince_name(dimInfo.getString("NAME"));
+                        orderWide.setProvince_area_code(dimInfo.getString("AREA_CODE"));
+                        orderWide.setProvince_iso_code(dimInfo.getString("ISO_CODE"));
+                        orderWide.setProvince_3166_2_code(dimInfo.getString("ISO_3166_2"));
+                    }
+                },
+                ASYNC_REQUEST_TIMEOUT,
+                TimeUnit.SECONDS
+        );
+
+        // 商品维度进行关联
+        SingleOutputStreamOperator<OrderWide> orderWideWithSkuInfoDStream = AsyncDataStream.unorderedWait(
+                orderWideWithBaseProvinceDStream,
+                new DimAsyncFunction<OrderWide>(PHOENIX_DIM_SKU_INFO) {
+
+                    @Override
+                    public String getPrimaryKey(OrderWide orderWide) {
+                        return orderWide.getSku_id().toString();
+                    }
+
+                    @Override
+                    public void join(OrderWide orderWide, JSONObject dimInfo) {
+                        orderWide.setSku_name(dimInfo.getString("SKU_NAME"));
+                        orderWide.setSpu_id(dimInfo.getLong("SPU_ID"));
+                        orderWide.setCategory3_id(dimInfo.getLong("CATEGORY3_ID"));
+                        orderWide.setTm_id(dimInfo.getLong("TM_ID"));
+                    }
+                },
+                ASYNC_REQUEST_TIMEOUT,
+                TimeUnit.SECONDS
+        );
+
+        // SPU维度进行关联
+        SingleOutputStreamOperator<OrderWide> orderWideWithSpuInfoDStream = AsyncDataStream.unorderedWait(
+                orderWideWithSkuInfoDStream,
+                new DimAsyncFunction<OrderWide>(PHOENIX_DIM_SPU_INFO) {
+
+                    @Override
+                    public String getPrimaryKey(OrderWide orderWide) {
+                        return orderWide.getSpu_id().toString();
+                    }
+
+                    @Override
+                    public void join(OrderWide orderWide, JSONObject dimInfo) {
+                        orderWide.setSpu_name(dimInfo.getString("SPU_NAME"));
+                    }
+                },
+                ASYNC_REQUEST_TIMEOUT,
+                TimeUnit.SECONDS
+        );
+
+        // 类别维度进行关联
+        SingleOutputStreamOperator<OrderWide> orderWideWithCategory3DStream = AsyncDataStream.unorderedWait(
+                orderWideWithSpuInfoDStream,
+                new DimAsyncFunction<OrderWide>(PHOENIX_DIM_BASE_CATEGORY3) {
+
+                    @Override
+                    public String getPrimaryKey(OrderWide orderWide) {
+                        return orderWide.getCategory3_id().toString();
+                    }
+
+                    @Override
+                    public void join(OrderWide orderWide, JSONObject dimInfo) {
+                        orderWide.setCategory3_name(dimInfo.getString("NAME"));
+                    }
+                },
+                ASYNC_REQUEST_TIMEOUT,
+                TimeUnit.SECONDS
+        );
+
+        // 品牌维度进行关联
+        SingleOutputStreamOperator<OrderWide> resDStream = AsyncDataStream.unorderedWait(
+                orderWideWithCategory3DStream,
+                new DimAsyncFunction<OrderWide>(PHOENIX_DIM_BASE_TRADEMARK) {
+
+                    @Override
+                    public String getPrimaryKey(OrderWide orderWide) {
+                        return orderWide.getTm_id().toString();
+                    }
+
+                    @Override
+                    public void join(OrderWide orderWide, JSONObject dimInfo) {
+                        orderWide.setTm_name(dimInfo.getString("TM_NAME"));
+                    }
+                },
+                ASYNC_REQUEST_TIMEOUT,
+                TimeUnit.SECONDS
+        );
+
+        resDStream.print();
+
+        //TODO 9.将关联后的宽表写到kafka的dwm_order_wide主题中
+        resDStream
+                .map(JSON::toJSONString)
+                .addSink(MyKafkaUtils.getKafkaProducer(DWM_ORDER_WIDE));
 
         env.execute();
     }
