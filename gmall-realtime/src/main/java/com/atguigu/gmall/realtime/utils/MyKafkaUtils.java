@@ -7,8 +7,10 @@ import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+
 import javax.annotation.Nullable;
 import java.util.Properties;
+
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**
@@ -69,5 +71,18 @@ public class MyKafkaUtils {
                 prop,
                 FlinkKafkaProducer.Semantic.EXACTLY_ONCE
         );
+    }
+
+    /**
+     * 获取FlinkSQL连接kafka的相关属性配置
+     */
+    public static String getKafkaDDL(String topic, String groupId) {
+
+        return "'connector' = 'kafka'," +
+                "'topic' = '" + topic + "'," +
+                "'properties.bootstrap.servers' = 'hadoop102:9092'," +
+                "'properties.group.id' = '" + groupId + "'," +
+                "'scan.startup.mode' = 'latest-offset'," +
+                "'format' = 'json'";
     }
 }

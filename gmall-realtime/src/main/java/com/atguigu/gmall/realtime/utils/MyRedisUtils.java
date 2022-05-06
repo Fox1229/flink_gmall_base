@@ -14,12 +14,6 @@ public class MyRedisUtils {
 
     private static JedisPool jedisPool;
 
-    /*public static void main(String[] args) {
-
-        Jedis jedis = getJedis();
-        System.out.println(jedis.ping());
-    }*/
-
     public static void initJedisPoll() {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(100);

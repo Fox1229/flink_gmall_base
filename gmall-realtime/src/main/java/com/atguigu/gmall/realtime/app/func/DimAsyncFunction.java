@@ -6,12 +6,14 @@ import com.atguigu.gmall.realtime.utils.MyThreadPoolUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
-
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 
 /**
  * 订单宽表，发送异步请求
+ * 模板方法设置模式
+ *      在父类中定义完成某一个功能的核心算法骨架(实现步骤)，但是具体的实现要延迟到子类中去完成。
+ *      在不改变父类核心算法骨架的前提下，每一个子类都可以有自己不同的实现。
  */
 public abstract class DimAsyncFunction<T> extends RichAsyncFunction<T, T> implements DimAsyncInterface<T> {
 
@@ -48,11 +50,11 @@ public abstract class DimAsyncFunction<T> extends RichAsyncFunction<T, T> implem
                             join(obj, dimInfo);
                         }
 
-                        // 将结果回调
-                        resultFuture.complete(Collections.singleton(obj));
-
                         long end = System.currentTimeMillis();
                         System.out.println("纬度关联耗时：" + (end - start) + " ms");
+
+                        // 将结果回调
+                        resultFuture.complete(Collections.singleton(obj));
                     }
                 }
         );

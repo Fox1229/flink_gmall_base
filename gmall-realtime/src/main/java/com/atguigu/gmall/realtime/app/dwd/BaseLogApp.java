@@ -166,9 +166,9 @@ public class BaseLogApp {
         DataStream<String> displayStream = splitDStream.getSideOutput(displayJsonOutput);
 
         // 打印
-        // splitDStream.print("page>>>");
-        // startStream.print("start$$$");
-        // displayStream.print("display###");
+        splitDStream.print("page>>>");
+        startStream.print("start$$$");
+        displayStream.print("display###");
 
         // TODO 7.将分流后的数据写入kafka的不同主题
         splitDStream.addSink(MyKafkaUtils.getKafkaProducer(DWD_PAGE_LOG));

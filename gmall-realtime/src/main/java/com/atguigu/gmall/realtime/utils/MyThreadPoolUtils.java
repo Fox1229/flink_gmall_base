@@ -13,6 +13,7 @@ public class MyThreadPoolUtils {
 
     /**
      * 获取线程池
+     * 解决线程安全问题：懒汉式双重校验琐
      */
     public static ThreadPoolExecutor getInstance() {
 

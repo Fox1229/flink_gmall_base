@@ -25,7 +25,7 @@ import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 /**
  * 用户跳出
  * 启动应用：
- *      zk kf mxw logger BaseLogApp UserJumpDetailApp
+ *      zk kf logger BaseLogApp UserJumpDetailApp
  */
 public class UserJumpDetailApp {
 

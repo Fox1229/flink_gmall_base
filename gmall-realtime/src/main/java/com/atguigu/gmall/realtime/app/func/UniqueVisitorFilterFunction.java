@@ -11,6 +11,9 @@ import org.apache.flink.configuration.Configuration;
 
 import java.text.SimpleDateFormat;
 
+/**
+ * UV过滤
+ */
 public class UniqueVisitorFilterFunction extends RichFilterFunction<JSONObject> {
 
     // mid上一次登录时间

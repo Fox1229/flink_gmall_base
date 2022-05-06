@@ -319,6 +319,7 @@ public class OrderWideApp {
                 TimeUnit.SECONDS
         );
 
+        // 打印
         resDStream.print();
 
         //TODO 9.将关联后的宽表写到kafka的dwm_order_wide主题中

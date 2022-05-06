@@ -32,19 +32,17 @@ public class GmallConfig {
     public static final String ODS_BASE_DB = "f_ods_base_db_m";
     public static final String ODS_BASE_DB_GROUP_ID = "f_ods_base_db_m_gid";
     // dwd层
-    public static final String DWD_PAGE_LOG = "f_dwd_page_log";
-    public static final String DWD_PAGE_LOG_GROUP_ID = "f_dwd_page_log_group_id";
-    public static final String DWD_START_LOG = "f_dwd_start_log";
-    public static final String DWD_START_LOG_GROUP_ID = "f_dwd_start_log_group_id";
-    public static final String DWD_DISPLAY_LOG = "f_dwd_display_log";
-    public static final String DWD_DISPLAY_LOG_GROUP_ID = "f_dwd_display_log_group_id";
-    public static final String DWD_ORDER_INFO = "f_dwd_order_info";
-    public static final String DWD_ORDER_INFO_GROUP_ID = "f_dwd_order_info_group_id";
-    public static final String DWD_ORDER_DETAIL = "f_dwd_order_detail";
-    public static final String DWD_ORDER_DETAIL_GROUP_ID = "f_dwd_order_detail_group_id";
     public static final String KAFKA_DEFAULT_TOPIC = "gmall_default_topic";
+    public static final String DWD_PAGE_LOG = "f_dwd_page_log";
+    public static final String DWD_START_LOG = "f_dwd_start_log";
+    public static final String DWD_DISPLAY_LOG = "f_dwd_display_log";
+    public static final String DWD_ORDER_INFO = "f_dwd_order_info";
+    public static final String DWD_ORDER_DETAIL = "f_dwd_order_detail";
     public static final String DWD_PAYMENT_INFO = "f_dwd_payment_info";
-    public static final String DWD_PAYMENT_INFO_GROUP_ID = "f_dwd_payment_info_group_id";
+    public static final String DWD_FAVOR_INFO = "f_dwd_favor_info";
+    public static final String DWD_CART_INFO = "f_dwd_cart_info";
+    public static final String DWD_COMMENT_INFO = "f_dwd_comment_info";
+    public static final String DWM_ORDER_REFUND_INFO = "f_dwd_order_refund_info";
     // dwm层
     public static final String DWM_UNIQUE_VISITOR = "f_dwm_unique_visitor";
     public static final String DWM_UNIQUE_VISITOR_GROUP_ID = "f_dwm_unique_visitor_group_id";
@@ -54,6 +52,11 @@ public class GmallConfig {
     public static final String DWM_ORDER_WIDE_GROUP_ID = "f_dwm_order_wide_group_id";
     public static final String DWM_PAYMENT_WIDE = "f_dwm_payment_wide";
     public static final String DWM_PAYMENT_WIDE_GROUP_ID = "f_dwm_payment_wide_group_id";
+    // dws层
+    public static final String DWS_VISITOR_STATS_GROUP_ID = "f_dws_visitor_stats_group_id";
+    public static final String DWS_PRODUCT_STATS_GROUP_ID = "f_dws_product_stats_group_id";
+    public static final String DWS_PROVINCE_STATS_GROUP_ID = "f_dws_province_stats_group_id";
+    public static final String DWS_KEYWORD_STATS_GROUP_ID = "f_dws_keyword_stats_group_id";
 
     // TODO MySQL
     public static final String MYSQL_HOST_NAME = "hadoop102";
