@@ -1,7 +1,6 @@
 package com.atguigu.gmall.realtime.app.dws;
 
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
-
 import com.atguigu.gmall.realtime.app.func.KeyWordUDTF;
 import com.atguigu.gmall.realtime.beans.KeywordStats;
 import com.atguigu.gmall.realtime.common.GmallConstant;
@@ -59,7 +58,7 @@ public class KeyWordStatsApp {
                 "select keyword, rowtime from " + fullWordView + ", LATERAL TABLE(ik_analyze(full_word)) as t(keyword)"
         );
 
-        // TODO 6分组、开窗、聚合计算
+        // TODO 6.分组、开窗、聚合计算
         Table keywordStats = tableEnv.sqlQuery(
                 "select " +
                         "keyword," +

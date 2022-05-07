@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
+/**
+ * Phoenix工具类
+ */
 public class MyPhoenixUtils {
 
     private static Connection conn;

@@ -17,11 +17,11 @@ public interface ProductStatsMapper {
      */
     @Select("select spu_id, spu_name, sum(order_amount) order_amount, sum(order_ct) order_ct " +
             "from product_stats " +
-            "where toYYYYMMDD(stt) = #{date} " +
+            "where toYYYYMMDD(stt) = ${date} " +
             "group by spu_id, spu_name " +
             "having order_amount > 0 " +
             "order by order_amount desc " +
-            "limit #{limit}")
+            "limit ${limit}")
     List<ProductStats> selectProductStatsBySPU(@Param(value = "date") Integer date, @Param(value = "limit")Integer limit);
 
     /**
@@ -29,11 +29,11 @@ public interface ProductStatsMapper {
      */
     @Select("select category3_id, category3_name, sum(order_amount) order_amount " +
             "from product_stats " +
-            "where toYYYYMMDD(stt) = #{date} " +
+            "where toYYYYMMDD(stt) = ${date} " +
             "group by category3_id, category3_name " +
             "having order_amount > 0 " +
             "order by order_amount desc " +
-            "limit #{limit}")
+            "limit ${limit}")
     List<ProductStats> selectProductStatsByCategory3(@Param(value = "date") Integer date, @Param(value = "limit")Integer limit);
 
     /**
@@ -41,16 +41,16 @@ public interface ProductStatsMapper {
      */
     @Select("select tm_id, tm_name, sum(order_amount) order_amount " +
             "from product_stats " +
-            "where toYYYYMMDD(stt) = #{date} " +
+            "where toYYYYMMDD(stt) = ${date} " +
             "group by tm_id, tm_name " +
             "having order_amount > 0 " +
             "order by order_amount desc " +
-            "limit #{limit}")
+            "limit ${limit}")
     List<ProductStats> selectProductStatsByTm(@Param(value = "date") Integer date, @Param(value = "limit")Integer limit);
 
     /**
      * 获取某一天交易总额
      */
-    @Select("select sum(order_amount) from product_stats where toYYYYMMDD(stt) = #{date}")
+    @Select("select sum(order_amount) from product_stats where toYYYYMMDD(stt) = ${date}")
     BigDecimal selectOrderAmount(Integer date);
 }

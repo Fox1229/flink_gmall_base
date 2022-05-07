@@ -1,10 +1,8 @@
 package com.atguigu.gmall.realtime.utils;
 
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,6 +96,8 @@ public class SugarController {
                 pvList.add(0L);
                 newUvList.add(0L);
             }
+
+            // 小时数不足两位补零
             hrList.add(String.format("%02d", i));
         }
 
@@ -122,8 +123,10 @@ public class SugarController {
         VisitorStats oldVisitor = new VisitorStats();
         for (VisitorStats tmp : visitorStatsList) {
             if ("1".equals(tmp.getIs_new())) {
+                // 新访客
                 newVisitor = tmp;
             } else {
+                // 老访客
                 oldVisitor = tmp;
             }
         }

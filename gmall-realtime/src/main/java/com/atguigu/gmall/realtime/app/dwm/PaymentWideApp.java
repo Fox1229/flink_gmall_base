@@ -1,7 +1,6 @@
 package com.atguigu.gmall.realtime.app.dwm;
 
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
-
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.realtime.beans.OrderWide;
 import com.atguigu.gmall.realtime.beans.PaymentInfo;

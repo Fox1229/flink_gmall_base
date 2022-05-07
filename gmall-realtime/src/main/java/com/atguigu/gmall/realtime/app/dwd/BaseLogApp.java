@@ -1,6 +1,5 @@
 package com.atguigu.gmall.realtime.app.dwd;
 
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

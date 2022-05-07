@@ -1,7 +1,6 @@
 package com.atguigu.gmall.realtime.app.dws;
 
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
-
 import com.atguigu.gmall.realtime.beans.ProvinceStats;
 import com.atguigu.gmall.realtime.utils.MyClickHouseUtils;
 import com.atguigu.gmall.realtime.utils.MyKafkaUtils;

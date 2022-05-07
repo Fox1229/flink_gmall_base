@@ -19,9 +19,7 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.flink.util.OutputTag;
 import org.apache.kafka.clients.producer.ProducerRecord;
-
 import javax.annotation.Nullable;
-
 import static com.atguigu.gmall.realtime.common.GmallConfig.*;
 
 /**

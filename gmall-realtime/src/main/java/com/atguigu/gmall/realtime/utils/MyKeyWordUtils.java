@@ -2,7 +2,6 @@ package com.atguigu.gmall.realtime.utils;
 
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
