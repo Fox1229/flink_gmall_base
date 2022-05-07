@@ -13,11 +13,6 @@ public class MyPhoenixUtils {
 
     private static Connection conn;
 
-    /*public static void main(String[] args) {
-
-        System.out.println(queryList("select * from dim_base_trademark", JSONObject.class));
-    }*/
-
     /**
      * 查询Phoenix表数据
      *

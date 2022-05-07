@@ -258,6 +258,10 @@ public class ProductStatsApp {
                 // TODO 9.聚合计算
                 .reduce(
                         new ReduceFunction<ProductStats>() {
+
+                            /**
+                             * 若窗口中只有一条数据，reduce方法不会执行
+                             */
                             @Override
                             public ProductStats reduce(ProductStats v1, ProductStats v2) throws Exception {
 
